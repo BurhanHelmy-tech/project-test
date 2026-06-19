@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Muslim Daily Practice Challenge</title>
+<style>
+  :root{
+    --green:#1f7a5e; --green-d:#155c46; --teal:#2aa890; --gold:#d6a64a; --gold-d:#b8862f;
+    --cream:#f6f3ea; --card:#ffffff; --ink:#23423a; --muted:#6b8a80;
+    --good:#2e9e6b; --good-bg:#e6f6ee; --bad:#d65a5a; --bad-bg:#fbe9e9;
+    --shadow:0 10px 30px rgba(31,122,94,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif;}
+  body{
+    min-height:100vh;color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #e9f5ef 0%, transparent 60%),
+      radial-gradient(900px 500px at 10% 110%, #f3ecd8 0%, transparent 55%),
+      var(--cream);
+    display:flex;justify-content:center;padding:18px;
+  }
+  .app{width:100%;max-width:760px;}
+  /* Top bar */
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--green-d);}
+  .brand svg{width:30px;height:30px;}
+  .scorechip{margin-left:auto;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e7e0cf;
+    padding:7px 14px;border-radius:999px;font-weight:700;color:var(--gold-d);box-shadow:var(--shadow);}
+  .scorechip svg{width:18px;height:18px;}
+  /* Progress */
+  .progwrap{background:#e7eee9;height:10px;border-radius:999px;overflow:hidden;margin-bottom:18px;display:none;}
+  .progbar{height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--green));transition:width .4s ease;border-radius:999px;}
+  /* Card */
+  .card{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:26px;border:1px solid #eee6d4;}
+  /* Home */
+  .hero{text-align:center;padding:14px 8px 4px;}
+  .hero h1{font-size:27px;color:var(--green-d);line-height:1.25;margin-bottom:8px;}
+  .hero p{color:var(--muted);font-size:15px;max-width:520px;margin:0 auto 20px;}
+  .levels{display:grid;gap:14px;}
+  .levelbtn{display:flex;align-items:center;gap:16px;text-align:left;background:#fff;border:2px solid #ecefe9;
+    border-radius:18px;padding:16px 18px;cursor:pointer;transition:.18s;width:100%;}
+  .levelbtn:hover{transform:translateY(-2px);border-color:var(--teal);box-shadow:var(--shadow);}
+  .lvicon{width:54px;height:54px;border-radius:14px;display:grid;place-items:center;flex-shrink:0;}
+  .lvicon svg{width:30px;height:30px;}
+  .lv1 .lvicon{background:#e7f5ee;} .lv2 .lvicon{background:#e6f0fb;} .lv3 .lvicon{background:#f3ecfb;} .lv4 .lvicon{background:#fbf2e0;}
+  .levelbtn h3{font-size:17px;margin-bottom:3px;}
+  .levelbtn p{font-size:13px;color:var(--muted);}
+  .lvtag{margin-left:auto;font-size:12px;font-weight:700;color:#fff;padding:5px 11px;border-radius:999px;flex-shrink:0;}
+  .lv1 .lvtag{background:var(--green);} .lv2 .lvtag{background:#3b82c4;} .lv3 .lvtag{background:#8b5cc4;} .lv4 .lvtag{background:var(--gold-d);}
+  .done-badge{margin-left:8px;color:var(--good);font-weight:800;font-size:13px;}
+  /* Level header */
+  .lvhead{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+  .lvhead .lvicon{width:46px;height:46px;}
+  .lvhead h2{font-size:20px;color:var(--green-d);}
+  .lvhead span{font-size:13px;color:var(--muted);}
+  /* Question */
+  .qcount{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:6px;letter-spacing:.3px;}
+  .qtext{font-size:19px;font-weight:700;line-height:1.4;margin-bottom:18px;}
+  .opts{display:grid;gap:11px;}
+  .opt{background:#fbfcfb;border:2px solid #e8ece9;border-radius:14px;padding:14px 16px;cursor:pointer;
+    font-size:15px;transition:.15s;display:flex;align-items:center;gap:12px;}
+  .opt:hover{border-color:var(--teal);background:#f4faf7;}
+  .opt .num{width:26px;height:26px;border-radius:50%;background:#eef2ef;color:var(--green-d);
+    font-weight:800;font-size:13px;display:grid;place-items:center;flex-shrink:0;}
+  .opt.correct{background:var(--good-bg);border-color:var(--good);}
+  .opt.correct .num{background:var(--good);color:#fff;}
+  .opt.wrong{background:var(--bad-bg);border-color:var(--bad);}
+  .opt.wrong .num{background:var(--bad);color:#fff;}
+  .opt.disabled{pointer-events:none;opacity:.85;}
+  /* Ordering */
+  .orderlist{display:grid;gap:10px;margin-bottom:6px;}
+  .orderitem{display:flex;align-items:center;gap:12px;background:#fbfcfb;border:2px solid #e8ece9;
+    border-radius:14px;padding:12px 14px;font-size:15px;}
+  .ordctrls{display:flex;gap:6px;margin-left:auto;}
+  .ordctrls button{width:34px;height:34px;border-radius:9px;border:1px solid #dfe6e1;background:#fff;
+    cursor:pointer;font-size:17px;color:var(--green-d);font-weight:800;line-height:1;}
+  .ordctrls button:hover{background:#eef5f1;}
+  .ordnum{width:26px;height:26px;border-radius:50%;background:#eef2ef;color:var(--green-d);font-weight:800;
+    font-size:13px;display:grid;place-items:center;flex-shrink:0;}
+  .orderitem.ok{background:var(--good-bg);border-color:var(--good);}
+  .orderitem.no{background:var(--bad-bg);border-color:var(--bad);}
+  /* Feedback */
+  .feedback{margin-top:16px;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5;display:none;}
+  .feedback.show{display:block;animation:fade .3s ease;}
+  .feedback.good{background:var(--good-bg);border:1px solid #bfe6d2;}
+  .feedback.bad{background:var(--bad-bg);border:1px solid #f0c9c9;}
+  .feedback b{display:block;margin-bottom:4px;font-size:15px;}
+  .feedback.good b{color:var(--good);} .feedback.bad b{color:var(--bad);}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  /* Buttons */
+  .btnrow{margin-top:18px;display:flex;gap:10px;}
+  .btn{border:none;border-radius:13px;padding:13px 22px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;}
+  .btn-primary{background:var(--green);color:#fff;box-shadow:0 6px 16px rgba(31,122,94,.3);}
+  .btn-primary:hover{background:var(--green-d);}
+  .btn-primary:disabled{background:#bcd0c8;box-shadow:none;cursor:not-allowed;}
+  .btn-ghost{background:#fff;border:1.5px solid #dfe6e1;color:var(--green-d);}
+  .btn-ghost:hover{background:#f3f7f4;}
+  .btn-check{background:var(--gold);color:#3a2c0c;width:100%;}
+  .btn-check:hover{background:var(--gold-d);color:#fff;}
+  /* Result */
+  .result{text-align:center;padding:10px;}
+  .badge{width:130px;height:130px;margin:6px auto 14px;border-radius:50%;display:grid;place-items:center;
+    background:radial-gradient(circle at 50% 35%,#fff6e0,#f3dca0);border:4px solid var(--gold);box-shadow:var(--shadow);}
+  .badge svg{width:66px;height:66px;}
+  .result h2{font-size:24px;color:var(--green-d);margin-bottom:6px;}
+  .result .badgename{font-size:18px;font-weight:800;color:var(--gold-d);margin-bottom:10px;}
+  .result p{color:var(--muted);margin-bottom:6px;}
+  .scoreline{font-size:34px;font-weight:800;color:var(--green);margin:10px 0;}
+  .stars{font-size:30px;letter-spacing:6px;margin-bottom:14px;}
+  .footer{text-align:center;color:var(--muted);font-size:12px;margin-top:18px;}
+  .pill{display:inline-block;background:#eef5f1;color:var(--green-d);font-size:12px;font-weight:700;
+    padding:4px 10px;border-radius:999px;margin:2px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2c-1.5 3-4 4.5-4 8a4 4 0 008 0c0-3.5-2.5-5-4-8z" fill="#2aa890"/><circle cx="18" cy="5" r="2" fill="#d6a64a"/></svg>
+      Muslim Daily Practice
+    </div>
+    <div class="scorechip">
+      <svg viewBox="0 0 24 24" fill="#d6a64a"><path d="M12 2l3 6 6 .9-4.5 4.4 1 6.7L12 17l-5.5 3 1-6.7L3 8.9 9 8z"/></svg>
+      <span id="scoreVal">0</span> markah
+    </div>
+  </div>
+  <div class="progwrap" id="progwrap"><div class="progbar" id="progbar"></div></div>
+  <div id="screen"></div>
+  <div class="footer">Cabaran Amalan Harian Muslim &bull; Wuduk &bull; Solat &bull; Akhlak</div>
+</div>
+
+<script>
+/* ================= DATA ================= */
+const LEVELS = {
+  1:{title:"Level 1 — Wuduk Challenge", sub:"Tertib & syarat wuduk", color:"lv1", icon:"water"},
+  2:{title:"Level 2 — Solat Mastery", sub:"Rukun & perkara membatalkan solat", color:"lv2", icon:"pray"},
+  3:{title:"Level 3 — Akhlak Decision Game", sub:"Pilih tindakan terbaik", color:"lv3", icon:"heart"},
+  4:{title:"Final Level — Grand Quiz", sub:"Gabungan semua topik", color:"lv4", icon:"trophy"}
+};
+
+const QUESTIONS = {
+1:[
+  {type:"order",
+   q:"Susun langkah wuduk mengikut tertib yang betul (1 = dahulu).",
+   correct:["Berniat di dalam hati","Membasuh seluruh muka","Membasuh kedua tangan hingga ke siku","Menyapu sebahagian kepala","Membasuh kedua kaki hingga buku lali"],
+   fb:"Tertib (urutan) ialah salah satu rukun wuduk: niat → muka → tangan ke siku → sapu kepala → kaki ke buku lali."},
+  {type:"mcq",
+   q:"Antara berikut, manakah yang MEMBATALKAN wuduk?",
+   opts:["Membaca al-Quran","Tertidur dengan nyenyak (tidak tetap punggung)","Berjalan kaki ke masjid","Memandang ke arah kiblat"],
+   ans:1,
+   fb:"Tidur nyenyak yang menghilangkan kesedaran membatalkan wuduk. Membaca al-Quran & berjalan tidak membatalkannya."},
+  {type:"mcq",
+   q:"Apakah hukum berkumur-kumur dan membasuh hidung ketika wuduk?",
+   opts:["Rukun (wajib)","Sunat","Haram","Makruh"],
+   ans:1,
+   fb:"Berkumur (madmadah) dan memasukkan air ke hidung (istinsyaq) adalah SUNAT, bukan rukun wuduk."},
+  {type:"mcq",
+   q:"Seorang pelajar membasuh kaki dahulu, kemudian baru membasuh muka. Apakah masalahnya?",
+   opts:["Tiada masalah","Wuduk tidak sah kerana tidak menjaga tertib","Wuduknya lebih afdal","Hanya makruh"],
+   ans:1,
+   fb:"Tertib adalah rukun. Mendahulukan kaki sebelum muka menyebabkan wuduk tidak sah."},
+  {type:"mcq",
+   q:"Manakah BUKAN syarat sah wuduk?",
+   opts:["Menggunakan air yang suci (mutlak)","Menghilangkan benda yang menghalang air ke kulit","Menghadap kiblat","Masuk waktu (bagi yang berhadas berterusan)"],
+   ans:2,
+   fb:"Menghadap kiblat BUKAN syarat wuduk — itu syarat solat. Air mutlak & tiada penghalang adalah syarat wuduk."}
+],
+2:[
+  {type:"mcq",
+   q:"Jika seseorang KETAWA terbahak-bahak (berdekah) dalam solat, apa hukumnya?",
+   opts:["Solat tetap sah","Solatnya BATAL","Hanya perlu sujud sahwi","Makruh sahaja"],
+   ans:1,
+   fb:"Ketawa sehingga berdekah (keluar dua huruf/bersuara) MEMBATALKAN solat. Senyum sahaja tidak membatalkannya."},
+  {type:"mcq",
+   q:"Antara berikut, manakah RUKUN solat yang wajib dilakukan?",
+   opts:["Mengangkat tangan ketika takbir","Membaca surah al-Fatihah","Membaca doa iftitah","Mengangkat jari ketika tahiyat"],
+   ans:1,
+   fb:"Membaca al-Fatihah adalah rukun solat. Doa iftitah & mengangkat tangan adalah sunat."},
+  {type:"order",
+   q:"Susun perbuatan dalam satu rakaat solat mengikut tertib yang betul.",
+   correct:["Takbiratul ihram","Membaca al-Fatihah","Rukuk","Iktidal (bangun dari rukuk)","Sujud"],
+   fb:"Tertib rakaat: takbir → Fatihah → rukuk → iktidal → sujud. Tertib ini adalah rukun solat."},
+  {type:"mcq",
+   q:"Manakah situasi yang TIDAK membatalkan solat?",
+   opts:["Makan atau minum dengan sengaja","Berkata-kata dengan sengaja","Terlupa dan tergerak sedikit menggaru","Membelakangkan kiblat"],
+   ans:2,
+   fb:"Gerakan ringan tanpa sengaja (seperti menggaru) tidak membatalkan solat. Makan, bercakap sengaja & membelakangi kiblat membatalkannya."},
+  {type:"mcq",
+   q:"Apakah bacaan yang BETUL ketika sujud?",
+   opts:["Subhana rabbiyal a'la","Subhana rabbiyal 'azim","Sami'allahu liman hamidah","Rabbighfir li"],
+   ans:0,
+   fb:"Ketika sujud: 'Subhana rabbiyal a'la'. 'Subhana rabbiyal azim' pula dibaca ketika rukuk."}
+],
+3:[
+  {type:"scenario",
+   q:"Kawan kamu meminta jawapan ketika peperiksaan sedang berjalan. Apakah tindakan terbaik?",
+   opts:[
+     {t:"Menolak dengan baik dan menasihatinya supaya berusaha sendiri",good:true},
+     {t:"Memberi jawapan kerana kasihan",good:false},
+     {t:"Pura-pura tidak nampak dan biar dia menyalin",good:false}],
+   fb:"Menolak dengan hikmah ialah akhlak mahmudah (amanah & jujur). Menipu dalam peperiksaan adalah khianat."},
+  {type:"scenario",
+   q:"Kamu menjumpai dompet berisi wang jatuh di kantin. Apakah yang patut dilakukan?",
+   opts:[
+     {t:"Menyerahkannya kepada guru atau pihak sekolah",good:true},
+     {t:"Mengambil wang itu untuk diri sendiri",good:false},
+     {t:"Membiarkannya kerana bukan urusan kamu",good:false}],
+   fb:"Memulangkan barang jumpaan adalah amanah (akhlak mahmudah). Mengambilnya tanpa hak adalah mencuri."},
+  {type:"scenario",
+   q:"Kamu diejek oleh seorang rakan di dalam kelas. Reaksi terbaik?",
+   opts:[
+     {t:"Bersabar dan memberitahu guru jika ia berterusan",good:true},
+     {t:"Membalas dengan mengejeknya semula lebih teruk",good:false},
+     {t:"Memukulnya kerana marah",good:false}],
+   fb:"Sabar & menyelesaikan masalah secara baik ialah akhlak mahmudah. Membalas ejekan/keganasan ialah mazmumah."},
+  {type:"scenario",
+   q:"Kamu ternampak rakan membuang sampah merata di kawasan sekolah. Apa tindakan mahmudah?",
+   opts:[
+     {t:"Menegurnya dengan sopan dan membantu mengutip sampah",good:true},
+     {t:"Turut membuang sampah kerana orang lain pun buat",good:false},
+     {t:"Mengherdik dan memalukannya di depan ramai",good:false}],
+   fb:"Menegur dengan lembut & memelihara kebersihan ialah akhlak mahmudah. Memalukan orang adalah mazmumah."},
+  {type:"scenario",
+   q:"Ibu meminta tolong membeli barang sedangkan kamu sedang bermain permainan video. Apa tindakan terbaik?",
+   opts:[
+     {t:"Berhenti seketika dan menolong ibu dengan rela hati",good:true},
+     {t:"Menjawab kasar kerana terganggu",good:false},
+     {t:"Buat tidak dengar dan teruskan bermain",good:false}],
+   fb:"Berbakti & taat kepada ibu bapa (birrul walidain) ialah akhlak mahmudah yang sangat dituntut."}
+],
+4:[
+  {type:"mcq",
+   q:"Berapakah rukun wuduk yang utama?",
+   opts:["3","6","10","2"],
+   ans:1,
+   fb:"Rukun wuduk ada 6: niat, basuh muka, basuh tangan ke siku, sapu kepala, basuh kaki ke buku lali, dan tertib."},
+  {type:"mcq",
+   q:"Apakah bacaan ketika rukuk?",
+   opts:["Subhana rabbiyal a'la","Subhana rabbiyal 'azim","Allahu akbar","Astaghfirullah"],
+   ans:1,
+   fb:"Ketika rukuk dibaca 'Subhana rabbiyal azim wa bihamdih'."},
+  {type:"mcq",
+   q:"Menjaga amanah dan bercakap benar tergolong dalam akhlak…",
+   opts:["Mazmumah (buruk)","Mahmudah (terpuji)","Makruh","Harus"],
+   ans:1,
+   fb:"Amanah & jujur ialah akhlak mahmudah (terpuji)."},
+  {type:"mcq",
+   q:"Manakah perkara yang MEMBATALKAN solat?",
+   opts:["Senyum kecil","Terbatuk tanpa sengaja","Bercakap dengan sengaja","Terlupa bacaan sebentar"],
+   ans:2,
+   fb:"Bercakap dengan sengaja membatalkan solat. Senyum & batuk tak sengaja tidak."},
+  {type:"mcq",
+   q:"Sifat suka mengumpat dan menipu termasuk akhlak…",
+   opts:["Mahmudah","Mazmumah","Sunat","Wajib"],
+   ans:1,
+   fb:"Mengumpat & menipu ialah akhlak mazmumah (tercela) yang wajib dijauhi."},
+  {type:"mcq",
+   q:"Sebelum mengerjakan solat, seseorang yang berhadas kecil mesti…",
+   opts:["Mandi wajib","Berwuduk","Bertayammum walaupun ada air","Tidak perlu apa-apa"],
+   ans:1,
+   fb:"Hadas kecil diangkat dengan berwuduk. Tayammum hanya ganti bila tiada air / uzur."}
+]
+};
+
+const BADGES = {1:{name:"Wudu Master",icon:"water"},2:{name:"Prayer Guardian",icon:"pray"},3:{name:"Akhlak Hero",icon:"heart"},4:{name:"Muslim Champion",icon:"trophy"}};
+
+/* ================= ICONS ================= */
+function icon(name){
+  const I={
+    water:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 3c-2.2 3.5-5 5.7-5 9.2a5 5 0 0010 0C17 8.7 14.2 6.5 12 3z" fill="#2aa890"/></svg>',
+    pray:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 20h16M7 20v-3l5-9 5 9v3" stroke="#3b82c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="5" r="2" fill="#3b82c4"/></svg>',
+    heart:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.4-7-9.5A3.6 3.6 0 0112 7a3.6 3.6 0 017 3.5C19 15.6 12 20 12 20z" fill="#8b5cc4"/></svg>',
+    trophy:'<svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10v4a5 5 0 01-10 0V4z" fill="#d6a64a"/><path d="M7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3M9 14h6l-1 4h-4z" stroke="#b8862f" stroke-width="1.6" stroke-linejoin="round" fill="#f3dca0"/><rect x="8" y="19" width="8" height="2" rx="1" fill="#b8862f"/></svg>'
+  };
+  return I[name]||'';
+}
+
+/* ================= STATE ================= */
+let score=0, totalAnswered=0, qIndex=0, curLevel=null, answeredThis=false, orderState=[], levelCorrect=0;
+const completed={};
+
+const screen=document.getElementById('screen');
+const scoreVal=document.getElementById('scoreVal');
+const progwrap=document.getElementById('progwrap');
+const progbar=document.getElementById('progbar');
+
+function setScore(){scoreVal.textContent=score;}
+
+/* ================= HOME ================= */
+function home(){
+  curLevel=null;
+  progwrap.style.display='none';
+  let html=`<div class="card"><div class="hero">
+    <h1>Cabaran Amalan Harian Muslim</h1>
+    <p>Uji kefahaman kamu tentang wuduk, solat dan akhlak melalui kuiz interaktif & situasi harian. Pilih satu level untuk bermula!</p>
+  </div><div class="levels">`;
+  for(const k of [1,2,3,4]){
+    const L=LEVELS[k];
+    const tag=k===4?"Final":"Level "+k;
+    const done=completed[k]?`<span class="done-badge">✓ Selesai</span>`:'';
+    html+=`<button class="levelbtn ${L.color}" onclick="startLevel(${k})">
+      <span class="lvicon">${icon(L.icon)}</span>
+      <span><h3>${L.title.split('— ')[1]} ${done}</h3><p>${L.sub} &bull; ${QUESTIONS[k].length} soalan</p></span>
+      <span class="lvtag">${tag}</span>
+    </button>`;
+  }
+  html+=`</div></div>`;
+  screen.innerHTML=html;
+}
+
+/* ================= LEVEL ================= */
+function startLevel(k){
+  curLevel=k; qIndex=0; levelCorrect=0;
+  progwrap.style.display='block';
+  renderQ();
+}
+
+function renderQ(){
+  answeredThis=false;
+  const L=LEVELS[curLevel];
+  const list=QUESTIONS[curLevel];
+  const Q=list[qIndex];
+  progbar.style.width=((qIndex)/list.length*100)+'%';
+
+  let html=`<div class="card">
+    <div class="lvhead"><span class="lvicon ${L.color.replace('lv','lv')}">${icon(L.icon)}</span>
+      <span><h2>${L.title}</h2><span>${L.sub}</span></span></div>
+    <div class="qcount">SOALAN ${qIndex+1} / ${list.length}</div>
+    <div class="qtext">${Q.q}</div>`;
+
+  if(Q.type==='order'){
+    orderState=shuffle([...Q.correct]);
+    html+=`<div class="orderlist" id="orderlist"></div>`;
+    html+=`<div class="btnrow"><button class="btn btn-check" id="checkBtn" onclick="checkOrder()">Semak Jawapan</button></div>`;
+  } else {
+    const opts=(Q.type==='scenario')?Q.opts.map(o=>o.t):Q.opts;
+    html+=`<div class="opts" id="opts">`;
+    opts.forEach((o,i)=>{
+      html+=`<div class="opt" data-i="${i}" onclick="answer(${i})"><span class="num">${String.fromCharCode(65+i)}</span><span>${o}</span></div>`;
+    });
+    html+=`</div>`;
+  }
+  html+=`<div class="feedback" id="feedback"></div>
+    <div class="btnrow" id="navrow" style="display:none">
+      <button class="btn btn-ghost" onclick="home()">⌂ Menu</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="next()" style="margin-left:auto">Seterusnya →</button>
+    </div></div>`;
+  screen.innerHTML=html;
+  if(Q.type==='order') renderOrder();
+}
+
+/* ----- ordering ----- */
+function renderOrder(){
+  const el=document.getElementById('orderlist');
+  el.innerHTML=orderState.map((t,i)=>`
+    <div class="orderitem"><span class="ordnum">${i+1}</span><span>${t}</span>
+      <span class="ordctrls">
+        <button onclick="moveItem(${i},-1)" ${i===0?'disabled style=opacity:.3':''}>↑</button>
+        <button onclick="moveItem(${i},1)" ${i===orderState.length-1?'disabled style=opacity:.3':''}>↓</button>
+      </span></div>`).join('');
+}
+function moveItem(i,d){
+  const j=i+d; if(j<0||j>=orderState.length)return;
+  [orderState[i],orderState[j]]=[orderState[j],orderState[i]];
+  renderOrder();
+}
+function checkOrder(){
+  if(answeredThis)return;
+  answeredThis=true;
+  const Q=QUESTIONS[curLevel][qIndex];
+  const correct=JSON.stringify(orderState)===JSON.stringify(Q.correct);
+  const items=document.querySelectorAll('.orderitem');
+  orderState.forEach((t,i)=>{
+    items[i].classList.add(t===Q.correct[i]?'ok':'no');
+    items[i].querySelector('.ordctrls').style.display='none';
+  });
+  document.getElementById('checkBtn').style.display='none';
+  finish(correct,Q.fb);
+}
+
+/* ----- mcq / scenario ----- */
+function answer(i){
+  if(answeredThis)return;
+  answeredThis=true;
+  const Q=QUESTIONS[curLevel][qIndex];
+  const correctIdx=(Q.type==='scenario')?Q.opts.findIndex(o=>o.good):Q.ans;
+  const isCorrect=(i===correctIdx);
+  const opts=document.querySelectorAll('.opt');
+  opts.forEach(o=>o.classList.add('disabled'));
+  opts[i].classList.add(isCorrect?'correct':'wrong');
+  if(!isCorrect) opts[correctIdx].classList.add('correct');
+  finish(isCorrect,Q.fb);
+}
+
+function finish(correct,fb){
+  totalAnswered++;
+  if(correct){ score+=10; levelCorrect++; }
+  setScore();
+  const f=document.getElementById('feedback');
+  f.className='feedback show '+(correct?'good':'bad');
+  f.innerHTML=`<b>${correct?'✓ Betul! +10 markah':'✗ Kurang tepat'}</b>${fb}`;
+  document.getElementById('navrow').style.display='flex';
+  const list=QUESTIONS[curLevel];
+  if(qIndex===list.length-1) document.getElementById('nextBtn').textContent='Lihat Keputusan 🏁';
+  progbar.style.width=((qIndex+1)/list.length*100)+'%';
+}
+
+function next(){
+  const list=QUESTIONS[curLevel];
+  if(qIndex<list.length-1){qIndex++;renderQ();}
+  else result();
+}
+
+/* ================= RESULT ================= */
+function result(){
+  completed[curLevel]=true;
+  const list=QUESTIONS[curLevel];
+  // count correct for this level via progress isn't stored per-Q; recompute from score delta is messy,
+  // so compute correct = round based on tracking. We'll track per-level correct instead:
+  const correctCount=levelCorrect;
+  const total=list.length;
+  const pct=Math.round(correctCount/total*100);
+  const stars=pct>=80?3:pct>=50?2:1;
+  const B=BADGES[curLevel];
+  const earned=pct>=50;
+  progwrap.style.display='none';
+  let msg = pct===100?"Cemerlang! Penguasaan penuh 🌟" : pct>=80?"Hebat! Hampir sempurna." : pct>=50?"Bagus! Teruskan berlatih." : "Jangan putus asa — cuba lagi!";
+  screen.innerHTML=`<div class="card result">
+    <div class="badge" style="${earned?'':'filter:grayscale(.8);opacity:.6'}">${icon(B.icon)}</div>
+    <h2>${LEVELS[curLevel].title.split('— ')[1]} Selesai!</h2>
+    ${earned?`<div class="badgename">🏅 Badge: ${B.name}</div>`:`<p>Capai 50% untuk membuka badge <b>${B.name}</b></p>`}
+    <div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+    <div class="scoreline">${correctCount} / ${total}</div>
+    <p>${msg}</p>
+    <p>Jumlah markah keseluruhan: <b>${score}</b></p>
+    <div class="btnrow" style="justify-content:center">
+      <button class="btn btn-ghost" onclick="retry()">↻ Cuba Semula</button>
+      <button class="btn btn-primary" onclick="home()">⌂ Menu Utama</button>
+    </div>
+  </div>`;
+}
+function retry(){
+  qIndex=0; levelCorrect=0; progwrap.style.display='block'; renderQ();
+}
+
+/* ================= UTIL ================= */
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+home();
+</script>
+</body>
+</html>
